@@ -16,7 +16,6 @@ This project was built with GitHub Copilot / Claude used as a coding accelerator
 - **The real-world problem framing.** Every scenario in this README (ingestion validation, pre-dbt gates, migration reconciliation, data contracts, audit reporting) is drawn from actual pain points I have encountered or observed in data engineering workflows. AI does not know your pipelines broke silently — you do.
 - **The choice of failure modes to cover.** Deciding which checks matter — NULL propagation, referential integrity after schema changes, format drift from third-party sources, value range violations in financial data — came from domain knowledge, not a prompt.
 - **Technology selection decisions.** Choosing SQLAlchemy for multi-database support, YAML for human-readable config, and a CLI-first design so it integrates cleanly into Airflow/CI pipelines — these were deliberate engineering choices.
-- **Identifying the original bugs.** The original version of this project had five distinct failure modes (reserved word collision on `ORDER`, silent exception swallowing, wrong test-to-field mappings, NULL crashes in validators, type errors on non-string fields). Diagnosing those required reading and understanding the code, not prompting.
 
 **Where AI was used:**
 
@@ -420,4 +419,4 @@ pytest
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](LICENSE).
