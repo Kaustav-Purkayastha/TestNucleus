@@ -1,0 +1,301 @@
+suite_name: "E-commerce Data Quality Suite"
+description: "Full validation across all 7 tables — customers, products, orders, items, payments, reviews"
+connection: "sqlite:///./data/sample.db"
+
+tests:
+
+  # ── category (reference table — expect clean) ────────────────────────────
+  - table: category
+    field: category_id
+    checks:
+      - type: not_null
+      - type: unique
+
+  - table: category
+    field: name
+    checks:
+      - type: not_null
+      - type: unique
+      - type: max_length
+        params:
+          max: 50
+
+  # ── customer ─────────────────────────────────────────────────────────────
+  - table: customer
+    field: customer_id
+    checks:
+      - type: not_null
+      - type: unique
+
+  - table: customer
+    field: first_name
+    checks:
+      - type: not_null
+      - type: no_trailing_spaces
+      - type: max_length
+        params:
+          max: 50
+
+  - table: customer
+    field: last_name
+    checks:
+      - type: not_null
+      - type: max_length
+        params:
+          max: 50
+
+  - table: customer
+    field: email
+    checks:
+      - type: email_format
+        nullable: true
+      - type: unique
+      - type: completeness_rate
+        params:
+          threshold: 85.0
+
+  - table: customer
+    field: phone_number
+    checks:
+      - type: phone_format
+        nullable: true
+      - type: no_trailing_spaces
+        nullable: true
+      - type: completeness_rate
+        params:
+          threshold: 80.0
+
+  - table: customer
+    field: created_date
+    checks:
+      - type: not_null
+      - type: date_format
+        params:
+          format: "%Y-%m-%d"
+
+  # ── product ──────────────────────────────────────────────────────────────
+  - table: product
+    field: product_id
+    checks:
+      - type: not_null
+      - type: unique
+
+  - table: product
+    field: product_name
+    checks:
+      - type: not_null
+      - type: unique
+      - type: max_length
+        params:
+          max: 100
+
+  - table: product
+    field: category_id
+    checks:
+      - type: not_null
+      - type: referential_integrity
+        params:
+          ref_table: category
+          ref_field: category_id
+
+  - table: product
+    field: price
+    checks:
+      - type: not_null
+      - type: min_value
+        params:
+          min: 0
+
+  - table: product
+    field: stock_quantity
+    checks:
+      - type: not_null
+      - type: not_negative
+
+  - table: product
+    field: sku
+    checks:
+      - type: not_null
+      - type: unique
+      - type: max_length
+        params:
+          max: 20
+
+  # ── order ─────────────────────────────────────────────────────────────────
+  - table: order
+    field: order_id
+    checks:
+      - type: not_null
+      - type: unique
+
+  - table: order
+    field: customer_id
+    checks:
+      - type: not_null
+      - type: referential_integrity
+        params:
+          ref_table: customer
+          ref_field: customer_id
+
+  - table: order
+    field: order_date
+    checks:
+      - type: not_null
+      - type: date_format
+        params:
+          format: "%Y-%m-%d"
+
+  - table: order
+    field: total_amount
+    checks:
+      - type: not_null
+      - type: min_value
+        params:
+          min: 0
+
+  - table: order
+    field: shipping_address
+    checks:
+      - type: completeness_rate
+        params:
+          threshold: 90.0
+
+  - table: order
+    field: status
+    checks:
+      - type: not_null
+      - type: in_set
+        params:
+          values: ["pending", "processing", "shipped", "delivered", "cancelled"]
+
+  # ── order_item ────────────────────────────────────────────────────────────
+  - table: order_item
+    field: item_id
+    checks:
+      - type: not_null
+      - type: unique
+
+  - table: order_item
+    field: order_id
+    checks:
+      - type: not_null
+      - type: referential_integrity
+        params:
+          ref_table: order
+          ref_field: order_id
+
+  - table: order_item
+    field: product_id
+    checks:
+      - type: not_null
+      - type: referential_integrity
+        params:
+          ref_table: product
+          ref_field: product_id
+
+  - table: order_item
+    field: quantity
+    checks:
+      - type: not_null
+      - type: min_value
+        params:
+          min: 1
+
+  - table: order_item
+    field: unit_price
+    checks:
+      - type: not_null
+      - type: min_value
+        params:
+          min: 0
+
+  # ── payment ───────────────────────────────────────────────────────────────
+  - table: payment
+    field: payment_id
+    checks:
+      - type: not_null
+      - type: unique
+
+  - table: payment
+    field: order_id
+    checks:
+      - type: not_null
+      - type: referential_integrity
+        params:
+          ref_table: order
+          ref_field: order_id
+
+  - table: payment
+    field: payment_date
+    checks:
+      - type: not_null
+      - type: date_format
+        nullable: true
+        params:
+          format: "%Y-%m-%d"
+
+  - table: payment
+    field: amount
+    checks:
+      - type: not_null
+      - type: min_value
+        params:
+          min: 0
+
+  - table: payment
+    field: payment_method
+    checks:
+      - type: not_null
+      - type: in_set
+        params:
+          values: ["credit_card", "debit_card", "paypal", "bank_transfer", "crypto"]
+
+  - table: payment
+    field: status
+    checks:
+      - type: not_null
+      - type: in_set
+        params:
+          values: ["completed", "pending", "failed", "refunded"]
+
+  # ── review ────────────────────────────────────────────────────────────────
+  - table: review
+    field: review_id
+    checks:
+      - type: not_null
+      - type: unique
+
+  - table: review
+    field: customer_id
+    checks:
+      - type: not_null
+      - type: referential_integrity
+        params:
+          ref_table: customer
+          ref_field: customer_id
+
+  - table: review
+    field: product_id
+    checks:
+      - type: not_null
+      - type: referential_integrity
+        params:
+          ref_table: product
+          ref_field: product_id
+
+  - table: review
+    field: rating
+    checks:
+      - type: not_null
+      - type: between
+        params:
+          min: 1
+          max: 5
+
+  - table: review
+    field: review_date
+    checks:
+      - type: not_null
+      - type: date_format
+        params:
+          format: "%Y-%m-%d"
